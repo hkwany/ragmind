@@ -5,7 +5,7 @@
 ## AI 应用架构
 
 | 文件 | 用途 |
-|---|---|---|
+|---|---|
 | `docs/01-rag-architecture.md` | RAG 系统架构 + 生产化设计 |
 | `docs/02-rag-design-decisions.md` | 分块 / 检索 / 重排 / 查询改写 | 
 | `docs/03-evaluation.md` | 评测方案（RAGAS + 指标 + 数据集） |
