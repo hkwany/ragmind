@@ -1,0 +1,74 @@
+name: ragmind
+
+x-app: &app
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  environment:
+    PG_DSN: postgresql://ragmind:ragmind@postgres:5432/ragmind
+    REDIS_URL: redis://redis:6379/0
+    EMBEDDING_PROVIDER: mock
+    LLM_PROVIDER: mock
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ragmind
+      POSTGRES_PASSWORD: ragmind
+      POSTGRES_DB: ragmind
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ragmind -d ragmind"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+
+  api:
+    <<: *app
+    command: ["uvicorn", "services.api.main:app", "--host", "0.0.0.0", "--port", "8000",
+              "--workers", "1", "--loop", "uvloop", "--no-access-log"]
+    ports: ["8000:8000"]
+    volumes:
+      # docs_sample 由 make seed 在宿主机生成，不进镜像；只读挂载给 ingest worker 用
+      - ../docs_sample:/app/docs_sample:ro
+    deploy:
+      resources:
+        limits: {cpus: "1.0", memory: 1G}
+
+  # 真实推理服务：OpenAI 兼容。生产用 GPU 的 vLLM，本地可换成 llama.cpp server。
+  # 需要模型权重，默认注释掉；用 LLM_PROVIDER=vllm + LLM_BASE_URL=http://vllm:8000/v1 启用。
+  # vllm:
+  #   image: vllm/vllm-openai:latest
+  #   command: ["--model", "Qwen/Qwen2.5-7B-Instruct", "--max-model-len", "4096"]
+  #   ipc: host
+  #   ports: ["8001:8000"]
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
+volumes:
+  pgdata:

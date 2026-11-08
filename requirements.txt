@@ -1,0 +1,9 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+redis==5.0.8
+asyncpg==0.29.0
+prometheus-client==0.20.0
+# 真实 LLM / 嵌入时才需要，mock 模式不装也不影响跑通：
+# openai>=1.40.0
+# sentence-transformers>=3.0.0
