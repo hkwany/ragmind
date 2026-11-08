@@ -4,7 +4,7 @@
 
 ## AI 应用架构
 
-| 文件 | 用途 | 什么时候用 |
+| 文件 | 用途 |
 |---|---|---|
 | `docs/01-rag-architecture.md` | RAG 系统架构 + 生产化设计 |
 | `docs/02-rag-design-decisions.md` | 分块 / 检索 / 重排 / 查询改写 | 
@@ -32,11 +32,6 @@ make up            # 起 postgres(pgvector) / redis / api
 make seed          # 造样例文档 + 嵌入入库
 make smoke         # 注入检测
 make eval          # 跑一轮 RAGAS 评测，产出基线分
-```
-
-没有 Docker 也能先验证代码正确性：
-
-```bash
 make check         # 语法 + 导入 + SQL 静态检查
 ```
 
@@ -58,7 +53,8 @@ make check         # 语法 + 导入 + SQL 静态检查
 ## 本地复现
 
 ![本地图片](pictures/docker_stack.png)
+---
 ![本地图片](pictures/guardrails.png)
+---
 ![本地图片](pictures/recall&MRR.png)
-
 ---
